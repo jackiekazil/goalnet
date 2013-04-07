@@ -14,6 +14,7 @@ class Task(object):
     
     Attributes:
         task_id: A unique identifier.
+        active: True if the task is yet to be accomplished, otherwise False
         payoff: The payoff once the task is accomplished
         subtasks: Number of subtasks to be undertaken for the task to succeed
         timeframe: The number of clock ticks from the first subtask to the last

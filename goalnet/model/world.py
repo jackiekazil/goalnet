@@ -13,6 +13,10 @@ class World(nx.Graph):
     World inherits from Graph, and adds model-specific functionality on top.
     This means that all the usual graph analysis functions can be used directly
     on the World object.
+    
+    Attributes:
+        clock: the current timestamp of the model clock.
+        tasks: A dictionary of tasks.
     '''
     
     
