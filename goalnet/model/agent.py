@@ -34,7 +34,7 @@ class Agent(object):
         self.task = None
         #TODO: Everything else
     
-    def tick(self):
+    def activate(self):
         '''
         The agent's sequence of actions each activation.
         

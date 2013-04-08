@@ -29,6 +29,7 @@ class Task(object):
         Create a new task.
         '''
         self.task_id = task_id
+        self.active = True
         self.payoff = payoff
         self.subtasks = subtasks
         self.timeframe = timeframe
