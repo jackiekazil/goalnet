@@ -23,9 +23,6 @@ class World(object):
     '''
     The world, as expressed in a networkx Graph object.
     
-    World inherits from Graph, and adds model-specific functionality on top.
-    This means that all ^the usual graph analysis functions can be used directly
-    on the World object.
     
     Attributes:
         Parameters
@@ -58,17 +55,18 @@ class World(object):
             
             "agent_count": How many agents to initiate the model with
             "initial_configuration": How to start off the network
-                "None" -- No connections between agents
+                "None" -- No connections between agents (default)
                 TODO: Add the rest
             "agent_speed": Scaling factor for scheduling; defaults to 1.
             "task_speed": How often new tasks are assigned; defaults to 1
+            "max_clock": The maximum clock tick to run until
         '''
         
         self.agent_count = config["agent_count"]
         self.network = nx.Graph()
         self.agents = {}
         for agent_id in range(self.agent_count):
-            self.agents[agent_id] = Agent(agent_id)
+            self.agents[agent_id] = Agent(agent_id, self)
         
         if config["initial_configuration"] == "None":
             for agent_id in self.agents:
@@ -80,6 +78,10 @@ class World(object):
         self.task_speed = 1
         if "task_speed" in config:
             self.task_speed = config["task_speed"]
+        
+        self.max_clock = None 
+        if "max_clock" in config:
+            self.max_clock = config["max_clock"]
         
         
         self.clock = 0
@@ -126,8 +128,10 @@ class World(object):
         TODO: have the task parameters change over time. 
         '''
         
+        print "Generating task" #Placeholder
+        
         # Subtasks are drawn from an interger log-normal distribution
-        subtasks = np.random.lognormal(mu=1, sigma=0.8)
+        subtasks = np.random.lognormal(mean=1, sigma=0.8)
         subtasks = int(np.ceil(subtasks))
         
         # Payoff is number of subtasks + an error
@@ -154,6 +158,10 @@ class World(object):
         '''
         timestamp, event = heappop(self.queue)
         self.clock = timestamp
+
+        if self.max_clock > 0 and self.clock > self.max_clock:
+            return None # End if max time reached.
+        
         event()
         
         # Reschedule event:
@@ -163,32 +171,24 @@ class World(object):
             speed = self.agent_speed
         
         delta = (-1/speed) * np.log(random.random())
-        self._add_event(self.event, self.clock + delta)
+        self._add_event(event, self.clock + delta)
         
-        
-        
-        
-        
-        
-                    
-            
-        
-        
-        
-        
+        return True
     
     
-        
-        
     
-    
+"""
+TESTING
+=======
+"""
 
+if __name__ == "__main__":
+    config = {"agent_count": 10,
+              "initial_configuration": "None",
+              "max_clock": 20}
+    w = World(config)
+    w.init_schedules()
+    while w.tick() is not None:
+        pass
     
-    
-        
-    
-    
-    
-    
-        
     

@@ -22,16 +22,17 @@ class Agent(object):
         inbox: A lis(?) that holds the agents' messages received
         ... more attributes will go here.
     '''
-    
-    world = None # World object for all agents in a model
-    
-    def __init__(self, name):
+        
+    def __init__(self, name, world):
         '''
         Initiate a new agent.            
         '''
         self.name = name
+        self.world = world # World object for all agents in a model
+        
         self.inbox = []
         self.task = None
+        
         #TODO: Everything else
     
     def activate(self):
@@ -51,6 +52,9 @@ class Agent(object):
             self.evaluate_message(message)
         
         action = self._choose_action()
+        
+        # Placeholder:
+        print self.world.clock, self.name, action
         
     
     def _choose_action(self):
