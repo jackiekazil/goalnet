@@ -21,7 +21,7 @@ from task import Task
 
 class World(object):
     '''
-    The world, as expressed in a networkx Graph object.
+    The model's main world object; runs the simulation and holds its state.
     
     
     Attributes:
@@ -42,7 +42,30 @@ class World(object):
         clock: The current timestamp of the model clock.
         agent_speed: The mean interval of agent activation
         task_speed: The mean interval of task generation
-
+    
+    NOTES
+    -----
+    Scheduling model:
+        The model proceeds in terms of 'events', which are simply function
+        calls; primarily agent activations and task generation/assignment.
+        Each event is associated with a timestamp on the abstracted model clock.
+        Events are called in order of their timestamps, while the model's clock
+        is set to the timestamp of the most recent event. For example, if the
+        event queue was [(1, A), (1.5, B), (2.1 C)] then event A would occur
+        at time 1, event B at time 1.5 and event C at time 2.1.
+        
+        Once an event occurs, it is immediately rescheduled; for example, an
+        agent will be activated, and the model will assign a timestamp for that
+        agent's next activation. The intervals between activations are drawn 
+        from a Poisson-like log-uniform distribution, scaled by a speed factor;
+        the higher the speed, the smaller the intervals between occurances.
+        
+        More formally, let us say that event j will occur at times 
+        $t_{j,0}, t_{j,1}...,t_{j,n}$ then:
+            $t_{j,n+1} = t_{j,n} + (-1/speed_j)*ln(U[0,1])$
+            where U[0,1] is a random variable drawn from a uniform distribution
+            between 0 and 1.
+        
     '''
     
     def __init__(self, config = {}):
@@ -124,7 +147,19 @@ class World(object):
         '''
         Create a new task and assign it to an agent.
         
-        Currently, the task parameters are constant.
+        Tasks are created as follows:
+        
+        The subtasks parameter is an integer rounded up from a random lognormal 
+        distribution, with the properties Min(subtasks)=1, Mode(subtasks)=3
+        
+        The task payoff is then:
+            Payoff = Subtasks + payoff_noise
+            where payoff_noise is normally-distributed, with mean=0 and sd=1
+        If Payoff < 1, it is coerced to 1.
+        
+        
+        
+        
         TODO: have the task parameters change over time. 
         '''
         
@@ -145,9 +180,11 @@ class World(object):
         
         new_task = Task(task_id, payoff, subtasks, timeframe)
         
+        count = 0
         owner = random.choice(self.agents.values())
-        while owner.task is not None:
+        while owner.task is not None and count < self.agent_count:
             owner = random.choice(self.agents.values())
+            count += 1 # Avoid an infinite loop if all agents have tasks.
         owner.task = new_task
     
     def tick(self):
@@ -180,6 +217,8 @@ class World(object):
 """
 TESTING
 =======
+
+Create a new World, with 10 agents, and run until the clock time is 20.
 """
 
 if __name__ == "__main__":
