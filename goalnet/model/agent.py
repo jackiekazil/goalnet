@@ -1,9 +1,10 @@
 '''
 Created on Apr 5, 2013
+Last updated Apr 13, 2013
 
-@author: dmasad
+@author: dmasad, snayar
 '''
-import random
+import random as r
 from collections import namedtuple
 
 Message = namedtuple('Message', ['sender', 'receiver', 'timestamp',
@@ -22,17 +23,21 @@ class Agent(object):
         inbox: A lis(?) that holds the agents' messages received
         ... more attributes will go here.
     '''
-        
-    def __init__(self, name, world):
+    
+    world = None # World object for all agents in a model
+    
+    def __init__(self, name):
         '''
         Initiate a new agent.            
         '''
         self.name = name
-        self.world = world # World object for all agents in a model
-        
-        self.inbox = []
+        self.inbox = [] #where msgs are received from others
         self.task = None
-        
+        self.turns = 0  #keep track of how many turns an agent has had
+        self.history = []   #keep track of history, who worked with and what payoff received, potentially how the ego felt about the payoff
+        self.network = []   #all the other agents in the ego's network
+        self.wealth = 0 #This could be the cumulative payoffs
+        self.riskthreshold = r.uniform[0,1] #randomly assign a risk threshold for now
         #TODO: Everything else
     
     def activate(self):
@@ -53,8 +58,16 @@ class Agent(object):
         
         action = self._choose_action()
         
-        # Placeholder:
-        print self.world.clock, self.name, action
+        if action == 'COMMUNICATE':
+            #send a message to another agent in network
+            world.agents[r.choice(self.network)].get_message('comm')
+        elif action == 'ACT':
+            #take action
+        elif 'SEEK':
+            #look for an introduction from another agent in network
+            world.agents[r.choice(self.network)].get_message('seek')
+        else:
+            #error, this condition should not occur at this time
         
     
     def _choose_action(self):
@@ -63,7 +76,7 @@ class Agent(object):
         '''
         #TODO: Fill in.
         actions = ['COMMUNICATE', 'ACT', 'SEEK']
-        return random.choice(actions)
+        return r.choice(actions)
     
         
         
@@ -83,6 +96,8 @@ class Agent(object):
         '''
         #TODO: Figure this out; this is just a placeholder
         self.inbox.append(message)
+        #Show that the message was received
+        print self.name,message
     
     def evaluate_message(self, message):
         '''
@@ -91,14 +106,39 @@ class Agent(object):
         '''
         #TODO Fill in action based on message type.
         if message.type == 'HelpRequest':
-            pass
+            self.process_help_request(self, message)
         elif message.type == 'ContactRequest':
-            pass
+            self.process_contact_request(self, message)
         elif message.type == 'Acknowledgment':
-            pass
+            self.process_acknowledgement(self, message)
         elif message.type == 'Payoff':
-            pass
+            self.process_payoff(self, message)
         
         
+    def send_message(self, message):
+        '''
+        Send a message to another agent.
+        
+        Args:
+            message: A message object to be sent to an agent in the ego's network
+        '''
+        #TODO: Construct a message object and return that
+        
+        return message
     
+    
+    def process_help_request(self, message):
+        #check to see if ego can help
+        #send an acknowledgement to the sender
+        
+        
+    def process_contact_request(self, message):
+        #select an agent from ego network
+        
+    def process_acknowledgement(self, message):
+        #process the acknowledgement by sending a message back to the sender
+        
+    def process_payoff(self, message):
+        #record the payoff in ego's history
+
     
