@@ -157,13 +157,18 @@ class World(object):
             where payoff_noise is normally-distributed, with mean=0 and sd=1
         If Payoff < 1, it is coerced to 1.
         
-        
-        
-        
         TODO: have the task parameters change over time. 
         '''
         
         print "Generating task" #Placeholder
+        
+        # Find out if there are any agents available
+        available_agents = [agent for agent in self.agents 
+                                if self.agents[agent].task is None]
+        if available_agents == []:
+            return None
+        # Pick the task owner at random
+        owner = random.choice(available_agents)
         
         # Subtasks are drawn from an interger log-normal distribution
         subtasks = np.random.lognormal(mean=1, sigma=0.8)
@@ -178,17 +183,9 @@ class World(object):
         timeframe = self.agent_speed * 2 # Timeframe fixed for now.
         task_id = len(self.tasks) + 1
         
-        new_task = Task(task_id, payoff, subtasks, timeframe)
-        
-        count = 0
-        owner = random.choice(self.agents.values())
-        while owner.task is not None and count < self.agent_count:
-            owner = random.choice(self.agents.values())
-            count += 1 # Avoid an infinite loop if all agents have tasks.
-        if count <= self.agent_count:
-            new_task.owner = owner.name
-            owner.task = new_task
-            self.tasks[task_id] = new_task
+        new_task = Task(task_id, payoff, subtasks, timeframe, owner)
+        self.agents[owner].task = new_task
+        self.tasks[task_id] = new_task
         
     
     def tick(self):
