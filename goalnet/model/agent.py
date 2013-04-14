@@ -24,15 +24,16 @@ class Agent(object):
         ... more attributes will go here.
     '''
     
-    world = None # World object for all agents in a model
-    
-    def __init__(self, name):
+   
+    def __init__(self, name, world):
         '''
         Initiate a new agent.            
         '''
         self.name = name
+        self.world = world
         self.inbox = [] #where msgs are received from others
         self.task = None
+        self.possible_tasks = []
         self.turns = 0  #keep track of how many turns an agent has had
         self.history = []   #keep track of history, who worked with and what payoff received, potentially how the ego felt about the payoff
         self.network = []   #all the other agents in the ego's network
@@ -60,14 +61,27 @@ class Agent(object):
         
         if action == 'COMMUNICATE':
             #send a message to another agent in network
-            world.agents[r.choice(self.network)].get_message('comm')
+            #TODO
+            for eachNeighbor in self.network:
+                #create new Message object
+                if self.task is not None:
+                    message = Message([self.name, eachNeighbor.name, self.world.clock,'HelpRequest',
+                                       self.task.id])
+                else:   #ask for introduction
+                    message = Message([self.name, eachNeighbor.name, self.world.clock,'HelpRequest',
+                                       None])
+                self.world.agents[eachNeighbor].get_message(message)
+                  
         elif action == 'ACT':
             #take action
-        elif 'SEEK':
+            self.choose_task()
+        elif action == 'SEEK':
             #look for an introduction from another agent in network
-            world.agents[r.choice(self.network)].get_message('seek')
+            #self.network.append(world.make_random_connection())
+            pass
         else:
             #error, this condition should not occur at this time
+            pass
         
     
     def _choose_action(self):
@@ -79,8 +93,17 @@ class Agent(object):
         return r.choice(actions)
     
         
-        
-        
+    def choose_task(self):
+        #if self task exists then decide to do that or select a task from the possible tasks
+        if self.task:
+            self.task.execute_subtask(self.world.clock)
+        else:
+            chosen_task_id = r.choice(self.possible_tasks)
+            #remove chosen_task from the list of possible_tasks
+            chosen_task = self.world.tasks[chosen_task_id]
+            chosen_task.execute_subtask(self.world.clock)
+            message = Message([self.name, chosen_task.owner, self.world.clock,'Acknowledgement',chosen_task_id])
+            self.world.agents[chosen_task.owner].get_message(message)
     
     '''
     MESSAGE HANDLING
@@ -129,16 +152,21 @@ class Agent(object):
     
     def process_help_request(self, message):
         #check to see if ego can help
+        task_id = message.data
+        self.possible_tasks.append(task_id)
         #send an acknowledgement to the sender
         
         
     def process_contact_request(self, message):
         #select an agent from ego network
+        pass
         
     def process_acknowledgement(self, message):
         #process the acknowledgement by sending a message back to the sender
+        pass
         
     def process_payoff(self, message):
         #record the payoff in ego's history
+        pass
 
     
