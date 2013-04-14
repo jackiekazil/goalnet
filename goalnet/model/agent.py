@@ -119,6 +119,7 @@ class Agent(object):
             message: A message object to be added to the inbox
         '''
         #TODO: Figure this out; this is just a placeholder
+        print self.name, "got message:", message
         self.inbox.append(message)
         #Show that the message was received
         print self.name,message
