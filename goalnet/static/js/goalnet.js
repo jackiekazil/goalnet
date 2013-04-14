@@ -1,3 +1,5 @@
+console.log(goalnetData); 
+
 
 var width = 960,
     height = 500;
@@ -13,7 +15,7 @@ var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
 
-d3.json("{{ url_for('../data', filename='output.json') }}", function(error, graph) {
+d3.json(goalnetData, function(error, graph) {
   force
       .nodes(graph.nodes)
       .links(graph.links)
