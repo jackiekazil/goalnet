@@ -20,8 +20,18 @@ class Agent(object):
     
     Attributes:
         name: The agent's unique identifier.
-        inbox: A lis(?) that holds the agents' messages received
+        world: The World (simstate) object
+        inbox: A list that holds the agents' messages received
         ... more attributes will go here.
+        task: Current task object; defaults to None
+        possible_tasks: Tasks other agents requested help on
+        turns: How many times the agent has been activated
+        history: Keep track of history, who worked with and what payoff 
+            received, potentially how the ego felt about the payoff
+        network: List of agents with whom this agent can communicate
+        wealth: The total cumulative payoff received, less payoff distributed
+        risk_threshold: The agent's risk aversion
+        
     '''
     
    
@@ -35,10 +45,10 @@ class Agent(object):
         self.task = None
         self.possible_tasks = []
         self.turns = 0  #keep track of how many turns an agent has had
-        self.history = []   #keep track of history, who worked with and what payoff received, potentially how the ego felt about the payoff
+        self.history = []   #
         self.network = []   #all the other agents in the ego's network
         self.wealth = 0 #This could be the cumulative payoffs
-        self.riskthreshold = r.random() #randomly assign a risk threshold for now
+        self.risk_threshold = r.random() #randomly assign a risk threshold
         #TODO: Everything else
     
     def activate(self):
@@ -66,11 +76,11 @@ class Agent(object):
             for eachNeighbor in self.network:
                 #create new Message object
                 if self.task is not None:
-                    message = Message([self.name, eachNeighbor.name, self.world.clock,'HelpRequest',
-                                       self.task.id])
+                    message = Message([self.name, eachNeighbor.name, 
+                                self.world.clock,'HelpRequest', self.task.id])
                 else:   #ask for introduction
-                    message = Message([self.name, eachNeighbor.name, self.world.clock,'HelpRequest',
-                                       None])
+                    message = Message([self.name, eachNeighbor.name, 
+                                       self.world.clock,'HelpRequest', None])
                 self.world.agents[eachNeighbor].get_message(message)
                   
         elif action == 'ACT':
@@ -103,7 +113,8 @@ class Agent(object):
             #remove chosen_task from the list of possible_tasks
             chosen_task = self.world.tasks[chosen_task_id]
             chosen_task.execute_subtask(self.world.clock)
-            message = Message([self.name, chosen_task.owner, self.world.clock,'Acknowledgement',chosen_task_id])
+            message = Message([self.name, chosen_task.owner, self.world.clock,
+                               'Acknowledgment',chosen_task_id])
             self.world.agents[chosen_task.owner].get_message(message)
     
     '''
