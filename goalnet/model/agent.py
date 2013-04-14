@@ -38,7 +38,7 @@ class Agent(object):
         self.history = []   #keep track of history, who worked with and what payoff received, potentially how the ego felt about the payoff
         self.network = []   #all the other agents in the ego's network
         self.wealth = 0 #This could be the cumulative payoffs
-        self.riskthreshold = r.uniform[0,1] #randomly assign a risk threshold for now
+        self.riskthreshold = r.random() #randomly assign a risk threshold for now
         #TODO: Everything else
     
     def activate(self):
@@ -58,6 +58,7 @@ class Agent(object):
             self.evaluate_message(message)
         
         action = self._choose_action()
+        print self.name, action
         
         if action == 'COMMUNICATE':
             #send a message to another agent in network
@@ -97,7 +98,7 @@ class Agent(object):
         #if self task exists then decide to do that or select a task from the possible tasks
         if self.task:
             self.task.execute_subtask(self.world.clock)
-        else:
+        elif self.possible_tasks != []:
             chosen_task_id = r.choice(self.possible_tasks)
             #remove chosen_task from the list of possible_tasks
             chosen_task = self.world.tasks[chosen_task_id]

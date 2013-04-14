@@ -221,7 +221,7 @@ class World(object):
         Pick a random agent and introduce them to originating_id agent.
         '''
         new_agent = random.choice(self.agents)
-        while new_agent != originating_id and 
+        #while new_agent != originating_id and 
     
     
     
