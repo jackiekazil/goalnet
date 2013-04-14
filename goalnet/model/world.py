@@ -185,7 +185,11 @@ class World(object):
         while owner.task is not None and count < self.agent_count:
             owner = random.choice(self.agents.values())
             count += 1 # Avoid an infinite loop if all agents have tasks.
-        owner.task = new_task
+        if count <= self.agent_count:
+            new_task.owner = owner.name
+            owner.task = new_task
+            self.tasks[task_id] = new_task
+        
     
     def tick(self):
         '''
@@ -211,6 +215,13 @@ class World(object):
         self._add_event(event, self.clock + delta)
         
         return True
+    
+    def make_random_connection(self, originating_id):
+        '''
+        Pick a random agent and introduce them to originating_id agent.
+        '''
+        new_agent = random.choice(self.agents)
+        while new_agent != originating_id and 
     
     
     

@@ -24,7 +24,7 @@ class Task(object):
     '''
 
 
-    def __init__(self, task_id, payoff, subtasks, timeframe):
+    def __init__(self, task_id, payoff, subtasks, timeframe, owner = None):
         '''
         Create a new task.
         '''
@@ -33,7 +33,9 @@ class Task(object):
         self.payoff = payoff
         self.subtasks = subtasks
         self.timeframe = timeframe
+        self.owner = owner
         self.subtasks_executed = []
+        
     
     def execute_subtask(self, tick):
         '''
