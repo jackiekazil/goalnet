@@ -218,7 +218,13 @@ class World(object):
         Pick a random agent and introduce them to originating_id agent.
         '''
         new_agent = random.choice(self.agents)
-        #while new_agent != originating_id and 
+        
+        #Make sure a connection is not made to self
+        while originating_id == new_agent.name:
+            new_agent = random.choice(self.agents)
+            
+        return new_agent.name
+         
     
     
     

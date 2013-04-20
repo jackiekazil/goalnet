@@ -7,8 +7,7 @@ Last updated Apr 13, 2013
 import random as r
 from collections import namedtuple
 
-Message = namedtuple('Message', ['sender', 'receiver', 'timestamp',
-                                 'type', 'data'])
+Message = namedtuple('Message', ['sender', 'receiver', 'timestamp', 'type', 'data'])
 
 class Agent(object):
     
@@ -46,7 +45,15 @@ class Agent(object):
         self.possible_tasks = []
         self.turns = 0  #keep track of how many turns an agent has had
         self.history = []   #
-        self.network = []   #all the other agents in the ego's network
+        self.task_team = []
+        self.network = []
+        
+        #Make sure a connection is not made to self
+        neighbor = int(r.random()*10)
+        while neighbor == self.name:
+            neighbor = int(r.random()*10)
+            
+        self.network.append(neighbor) #for every agent for now, append a random agent to its network
         self.wealth = 0 #This could be the cumulative payoffs
         self.risk_threshold = r.random() #randomly assign a risk threshold
         #TODO: Everything else
@@ -63,7 +70,7 @@ class Agent(object):
                 iii. Seek out new connections
             c. Receive / Distribute payoffs
         '''
-        
+        self.turns += 1
         for message in self.inbox:
             self.evaluate_message(message)
         
@@ -76,11 +83,9 @@ class Agent(object):
             for eachNeighbor in self.network:
                 #create new Message object
                 if self.task is not None:
-                    message = Message([self.name, eachNeighbor.name, 
-                                self.world.clock,'HelpRequest', self.task.id])
+                    message = Message([self.name, eachNeighbor, self.world.clock,'HelpRequest', self.task.id])
                 else:   #ask for introduction
-                    message = Message([self.name, eachNeighbor.name, 
-                                       self.world.clock,'HelpRequest', None])
+                    message = Message([self.name, eachNeighbor, self.world.clock,'ContactRequest', None])
                 self.world.agents[eachNeighbor].get_message(message)
                   
         elif action == 'ACT':
@@ -88,8 +93,7 @@ class Agent(object):
             self.choose_task()
         elif action == 'SEEK':
             #look for an introduction from another agent in network
-            #self.network.append(world.make_random_connection())
-            pass
+            self.network.append(self.world.make_random_connection(self.name))
         else:
             #error, this condition should not occur at this time
             pass
@@ -113,8 +117,7 @@ class Agent(object):
             #remove chosen_task from the list of possible_tasks
             chosen_task = self.world.tasks[chosen_task_id]
             chosen_task.execute_subtask(self.world.clock)
-            message = Message([self.name, chosen_task.owner, self.world.clock,
-                               'Acknowledgment',chosen_task_id])
+            message = Message([self.name, chosen_task.owner, self.world.clock, 'Acknowledgment',chosen_task_id])
             self.world.agents[chosen_task.owner].get_message(message)
     
     '''
@@ -167,19 +170,30 @@ class Agent(object):
         #check to see if ego can help
         task_id = message.data
         self.possible_tasks.append(task_id)
-        #send an acknowledgement to the sender
-        
+          
         
     def process_contact_request(self, message):
-        #select an agent from ego network
-        pass
+        #select an agent from ego network and add it to the network of the requestor
+        self.world.agents[message.sender].network.append(r.choice(self.network))
         
     def process_acknowledgement(self, message):
         #process the acknowledgement by sending a message back to the sender
-        pass
-        
+        self.task_team.append(message.sender)
+        if self.task.subtasks == self.task.subtasks_executed.length: #task is complete
+            #TODO: calculate payoff to send to others
+            other_payoff = 1
+            #TODO: accumulate own payoff in wealth
+            own_payoff = 1
+            self.wealth += own_payoff
+            #send the payoff message to each member on the team with the payoff
+            for eachMember in self.task_team:
+                message = Message([self.name, eachMember, self.world.clock, 'Payoff', other_payoff]) #May want to add task id so that the receiver can tell what the payoff was for
+                self.world.agents[eachMember].get_message(message)
+            
     def process_payoff(self, message):
         #record the payoff in ego's history
-        pass
+        payoff_tuple = message.sender,message.data
+        self.history.append(payoff_tuple)
+        self.wealth += message.data
 
     
