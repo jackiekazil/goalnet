@@ -83,9 +83,9 @@ class Agent(object):
             for eachNeighbor in self.network:
                 #create new Message object
                 if self.task is not None:
-                    message = Message([self.name, eachNeighbor, self.world.clock,'HelpRequest', self.task.id])
+                    message = Message(self.name, eachNeighbor, self.world.clock,'HelpRequest', self.task.task_id)
                 else:   #ask for introduction
-                    message = Message([self.name, eachNeighbor, self.world.clock,'ContactRequest', None])
+                    message = Message(self.name, eachNeighbor, self.world.clock,'ContactRequest', None)
                 self.world.agents[eachNeighbor].get_message(message)
                   
         elif action == 'ACT':
@@ -117,7 +117,7 @@ class Agent(object):
             #remove chosen_task from the list of possible_tasks
             chosen_task = self.world.tasks[chosen_task_id]
             chosen_task.execute_subtask(self.world.clock)
-            message = Message([self.name, chosen_task.owner, self.world.clock, 'Acknowledgment',chosen_task_id])
+            message = Message(self.name, chosen_task.owner, self.world.clock, 'Acknowledgment',chosen_task_id)
             self.world.agents[chosen_task.owner].get_message(message)
     
     '''
@@ -145,13 +145,13 @@ class Agent(object):
         '''
         #TODO Fill in action based on message type.
         if message.type == 'HelpRequest':
-            self.process_help_request(self, message)
+            self.process_help_request(message)
         elif message.type == 'ContactRequest':
-            self.process_contact_request(self, message)
+            self.process_contact_request(message)
         elif message.type == 'Acknowledgment':
-            self.process_acknowledgement(self, message)
+            self.process_acknowledgement(message)
         elif message.type == 'Payoff':
-            self.process_payoff(self, message)
+            self.process_payoff(message)
         
         
     def send_message(self, message):
@@ -179,7 +179,7 @@ class Agent(object):
     def process_acknowledgement(self, message):
         #process the acknowledgement by sending a message back to the sender
         self.task_team.append(message.sender)
-        if self.task.subtasks == self.task.subtasks_executed.length: #task is complete
+        if self.task.subtasks == len(self.task.subtasks_executed): #task is complete
             #TODO: calculate payoff to send to others
             other_payoff = 1
             #TODO: accumulate own payoff in wealth
@@ -187,7 +187,7 @@ class Agent(object):
             self.wealth += own_payoff
             #send the payoff message to each member on the team with the payoff
             for eachMember in self.task_team:
-                message = Message([self.name, eachMember, self.world.clock, 'Payoff', other_payoff]) #May want to add task id so that the receiver can tell what the payoff was for
+                message = Message(self.name, eachMember, self.world.clock, 'Payoff', other_payoff) #May want to add task id so that the receiver can tell what the payoff was for
                 self.world.agents[eachMember].get_message(message)
             
     def process_payoff(self, message):
