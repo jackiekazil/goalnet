@@ -78,7 +78,8 @@ class World(object):
             
             "agent_count": How many agents to initiate the model with
             "initial_configuration": How to start off the network
-                "None" -- No connections between agents (default)
+                "None": No connections between agents (default)
+                "Random1": For each agent, connect to another random agent
                 TODO: Add the rest
             "agent_speed": Scaling factor for scheduling; defaults to 1.
             "task_speed": How often new tasks are assigned; defaults to 1
@@ -94,6 +95,11 @@ class World(object):
         if config["initial_configuration"] == "None":
             for agent_id in self.agents:
                 self.network.add_node(agent_id)
+        elif config["initial_configuration"] == "Random1":
+            for agent_id in self.agents:
+                self.random_new_neighbor(agent_id)
+                
+                
         
         self.agent_speed = 1
         if "agent_speed" in config:
@@ -123,7 +129,23 @@ class World(object):
             timestamp: The timestamp to call the event at.
         '''
         heappush(self.queue, (timestamp, event))
+    
+    def random_new_neighbor(self, name):
+        '''
+        Get the specified agent a new neighbor at random.
         
+        Updates the agent's network list and the overall network object. 
+        '''
+        possible_neighbors = [agent_id for agent_id in self.agents
+                              if agent_id != name and  
+                              not self.network.has_edge(agent_id, name)]
+        if possible_neighbors == []:
+            return None
+        
+        neighbor = random.choice(possible_neighbors)
+        self.agents[name].network.append(neighbor)
+        self.agents[neighbor].network.append(name)
+        self.network.add_edge(name, neighbor)
     
     def init_schedules(self, agent_delay = 0):
         '''
@@ -213,17 +235,6 @@ class World(object):
         
         return True
     
-    def make_random_connection(self, originating_id):
-        '''
-        Pick a random agent and introduce them to originating_id agent.
-        '''
-        new_agent = random.choice(self.agents)
-        
-        #Make sure a connection is not made to self
-        while originating_id == new_agent.name:
-            new_agent = random.choice(self.agents)
-            
-        return new_agent.name
          
     
     
@@ -236,12 +247,12 @@ Create a new World, with 10 agents, and run until the clock time is 20.
 """
 
 if __name__ == "__main__":
-    config = {"agent_count": 10,
-              "initial_configuration": "None",
-              "max_clock": 20}
+    config = {"agent_count": 100,
+              "initial_configuration": "Random1",
+              "max_clock": 200}
     w = World(config)
     w.init_schedules()
     while w.tick() is not None:
-        pass
+        print "Network density:", nx.density(w.network)
     
     

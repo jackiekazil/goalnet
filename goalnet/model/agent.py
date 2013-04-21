@@ -48,12 +48,6 @@ class Agent(object):
         self.task_team = []
         self.network = []
         
-        #Make sure a connection is not made to self
-        neighbor = int(r.random()*10)
-        while neighbor == self.name:
-            neighbor = int(r.random()*10)
-            
-        self.network.append(neighbor) #for every agent for now, append a random agent to its network
         self.wealth = 0 #This could be the cumulative payoffs
         self.risk_threshold = r.random() #randomly assign a risk threshold
         #TODO: Everything else
@@ -71,12 +65,16 @@ class Agent(object):
             c. Receive / Distribute payoffs
         '''
         self.turns += 1
+        
+        # Evaluate messages
         for message in self.inbox:
             self.evaluate_message(message)
         
+        # Choose action
         action = self._choose_action()
         print self.name, action
         
+        # Take action
         if action == 'COMMUNICATE':
             #send a message to another agent in network
             #TODO
@@ -93,9 +91,14 @@ class Agent(object):
             self.choose_task()
         elif action == 'SEEK':
             #look for an introduction from another agent in network
-            self.network.append(self.world.make_random_connection(self.name))
+            self.world.random_new_neighbor(self.name)
         else:
             #error, this condition should not occur at this time
+            pass
+        
+        # Check payoffs
+        if self.task is not None:
+            # TODO: Check task completed
             pass
         
     
@@ -117,7 +120,8 @@ class Agent(object):
             #remove chosen_task from the list of possible_tasks
             chosen_task = self.world.tasks[chosen_task_id]
             chosen_task.execute_subtask(self.world.clock)
-            message = Message(self.name, chosen_task.owner, self.world.clock, 'Acknowledgment',chosen_task_id)
+            message = Message(self.name, chosen_task.owner, self.world.clock, 
+                              'Acknowledgment',chosen_task_id)
             self.world.agents[chosen_task.owner].get_message(message)
     
     '''
@@ -133,10 +137,8 @@ class Agent(object):
             message: A message object to be added to the inbox
         '''
         #TODO: Figure this out; this is just a placeholder
-        print self.name, "got message:", message
+        #print self.name, "got message:", message
         self.inbox.append(message)
-        #Show that the message was received
-        print self.name,message
     
     def evaluate_message(self, message):
         '''
@@ -149,7 +151,7 @@ class Agent(object):
         elif message.type == 'ContactRequest':
             self.process_contact_request(message)
         elif message.type == 'Acknowledgment':
-            self.process_acknowledgement(message)
+            self.process_acknowledgment(message)
         elif message.type == 'Payoff':
             self.process_payoff(message)
         
@@ -173,11 +175,20 @@ class Agent(object):
           
         
     def process_contact_request(self, message):
-        #select an agent from ego network and add it to the network of the requestor
-        self.world.agents[message.sender].network.append(r.choice(self.network))
-        
-    def process_acknowledgement(self, message):
-        #process the acknowledgement by sending a message back to the sender
+        #select an agent from ego network and add it to the network of the requester
+        #TODO: add decision whether to help or not.
+        source = self.world.agents[message.sender]
+        possible_connections = [neighbor for neighbor in self.network
+                                    if neighbor != source.name and 
+                                    neighbor not in source.network]
+        if possible_connections == []: return None
+            
+        new_connection = r.choice(possible_connections)
+        self.world.agents[new_connection].network.append(source.name)
+        self.world.network.add_edge(source.name, new_connection)
+                
+    def process_acknowledgment(self, message):
+        #process the acknowledgment by sending a message back to the sender
         self.task_team.append(message.sender)
         if self.task.subtasks == len(self.task.subtasks_executed): #task is complete
             #TODO: calculate payoff to send to others
@@ -187,7 +198,8 @@ class Agent(object):
             self.wealth += own_payoff
             #send the payoff message to each member on the team with the payoff
             for eachMember in self.task_team:
-                message = Message(self.name, eachMember, self.world.clock, 'Payoff', other_payoff) #May want to add task id so that the receiver can tell what the payoff was for
+                #May want to add task id so that the receiver can tell what the payoff was for
+                message = Message(self.name, eachMember, self.world.clock, 'Payoff', other_payoff) 
                 self.world.agents[eachMember].get_message(message)
             
     def process_payoff(self, message):
