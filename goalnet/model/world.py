@@ -247,9 +247,9 @@ Create a new World, with 10 agents, and run until the clock time is 20.
 """
 
 if __name__ == "__main__":
-    config = {"agent_count": 100,
+    config = {"agent_count": 10,
               "initial_configuration": "Random1",
-              "max_clock": 200}
+              "max_clock": 20}
     w = World(config)
     w.init_schedules()
     while w.tick() is not None:

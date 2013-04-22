@@ -44,6 +44,19 @@ class Task(object):
         
         self.subtasks_executed.append(tick)
     
+    
+    def get_subtasks_remaining(self):
+        '''
+        Return an estimate of how many subtasks are needed to complete the task.
+        '''
+        start_time = max(self.subtasks_executed) - self.timeframe
+        subtasks_allowed = [timestamp for timestamp in self.subtasks_executed
+                            if timestamp >= start_time]
+        if len(subtasks_allowed) >= self.subtasks:
+            return False
+        else:
+            return self.subtasks - len(subtasks_allowed) 
+        
     def is_complete(self):
         '''
         Check if the task has been accomplished.
