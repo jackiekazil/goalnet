@@ -79,10 +79,7 @@ class Agent(object):
         
         The sequence is:
             a. Evaluate each message in the inbox
-            b. Choose an action:
-                i.   Communicate
-                ii.  Act on a task
-                iii. Seek out new connections
+            b. Choose an action
             c. Receive / Distribute payoffs
         '''
         self.turns += 1
@@ -112,7 +109,7 @@ class Agent(object):
         elif action == 'ACT':
             task = self.world.tasks[target]
             task.execute_subtask(self.world.clock)
-            if target != self.task.task_id:
+            if self.task is None or target != self.task.task_id:
                 message = Message(self.name, task.owner, self.world.clock,
                                   'Acknowledgment', None)
                 self.world.agents[task.owner].get_message(message)

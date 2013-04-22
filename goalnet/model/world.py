@@ -90,7 +90,10 @@ class World(object):
         self.network = nx.Graph()
         self.agents = {}
         for agent_id in range(self.agent_count):
-            self.agents[agent_id] = Agent(agent_id, self)
+            pth = random.random()
+            cent = random.random()
+            greed = random.random()
+            self.agents[agent_id] = Agent(agent_id, self, pth, cent, greed)
         
         if config["initial_configuration"] == "None":
             for agent_id in self.agents:
