@@ -6,6 +6,7 @@ Last updated Apr 13, 2013
 '''
 import random as r
 from collections import namedtuple
+from task import Task
 
 Message = namedtuple('Message', ['sender', 'receiver', 'timestamp', 'type', 'data'])
 
@@ -24,9 +25,9 @@ class Agent(object):
         propensity_to_help: The agent's initial willingness to help others
         centralization: The agent's willingness to share contacts
         greed: The proportion of task payoff an agent is inclined to keep
+        beta: The discount factor on past events; currently fixed at 1.
         
         inbox: A list that holds the agents' messages received
-        ... more attributes will go here.
         task: Current task object; defaults to None
         possible_tasks: Tasks other agents requested help on
         turns: How many times the agent has been activated
@@ -60,6 +61,7 @@ class Agent(object):
         
         self.inbox = [] #where msgs are received from others
         self.task = None
+        self.task_contributors = [] # Agents who have performed subtasks
         self.possible_tasks = []
         self.turns = 0  #keep track of how many turns an agent has had
         
@@ -109,9 +111,10 @@ class Agent(object):
         elif action == 'ACT':
             task = self.world.tasks[target]
             task.execute_subtask(self.world.clock)
+            # If working on someone else's task, send them a message.
             if self.task is None or target != self.task.task_id:
                 message = Message(self.name, task.owner, self.world.clock,
-                                  'Acknowledgment', None)
+                                  'Acknowledgment', task.task_id)
                 self.world.agents[task.owner].get_message(message)
                 
         elif action == 'SEEK':
@@ -122,9 +125,31 @@ class Agent(object):
             pass
         
         # Check payoffs
-        if self.task is not None:
-            # TODO: Check task completed
-            pass
+        if self.task is not None and self.task.is_complete():
+            print self.name, "Task complete!", self.task.subtasks
+            # Distribute payoffs:
+            self.task.active = False
+            total_payoff = self.task.payoff
+            self.wealth += self.greed * total_payoff
+            # Distribute payoffs:
+            weights = {}
+            total_weights = 0.0
+            # Compute relative payoffs:
+            for agent in self.task_contributors:
+                wth = self._willingness_to_help(agent)
+                if wth < 0: wth = 0
+                weights[agent] = wth
+                total_weights += wth
+            for agent in self.task_contributors:
+                payoff = (weights[agent]/total_weights)*total_payoff
+                message = Message(self.name, agent, self.world.clock, 'Payoff',
+                                  (self.task.task_id, payoff))
+                self.world.agents[agent].get_message(message)
+            self.task = None
+                
+                
+            
+                
     
     def _willingness_to_help(self, neighbor):
         '''
@@ -283,6 +308,7 @@ class Agent(object):
         '''
         new_event = (message.sender, 1.0, message.timestamp)
         self.history.append(new_event)
+        self.task_contributors.append(message.sender)
     
             
     def process_payoff(self, message):
