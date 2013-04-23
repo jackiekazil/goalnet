@@ -124,7 +124,7 @@ class Agent(object):
             #error, this condition should not occur at this time
             pass
         
-        # Check payoffs
+        # Check to see if task complete; if so, distribute payoffs
         if self.task is not None and self.task.is_complete():
             print self.name, "Task complete!", self.task.subtasks
             # Distribute payoffs:
