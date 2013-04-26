@@ -87,12 +87,13 @@ class World(object):
         '''
         
         self.agent_count = config["agent_count"]
+        self.random_number_generator = random.Random(config["random_seed"])
         self.network = nx.Graph()
         self.agents = {}
         for agent_id in range(self.agent_count):
-            pth = random.random()
-            cent = random.random()
-            greed = random.random()
+            pth = self.random_number_generator.random() #random.random()
+            cent = self.random_number_generator.random() #random.random()
+            greed = self.random_number_generator.random() #random.random()
             self.agents[agent_id] = Agent(agent_id, self, pth, cent, greed)
         
         if config["initial_configuration"] == "None":
@@ -145,7 +146,7 @@ class World(object):
         if possible_neighbors == []:
             return None
         
-        neighbor = random.choice(possible_neighbors)
+        neighbor = self.random_number_generator.choice(possible_neighbors)
         self.agents[name].network.append(neighbor)
         self.agents[neighbor].network.append(name)
         self.network.add_edge(name, neighbor)
@@ -159,11 +160,11 @@ class World(object):
             some tasks to be assigned before agents begin to be active. 
         '''
         
-        timestamp = (-1/self.task_speed) * np.log(random.random())
+        timestamp = (-1/self.task_speed) * np.log(self.random_number_generator.random())
         self._add_event(self.create_task, timestamp)
         
         for agent in self.agents.values():
-            timestamp = (-1/self.agent_speed) * np.log(random.random())
+            timestamp = (-1/self.agent_speed) * np.log(self.random_number_generator.random())
             timestamp += agent_delay
             self._add_event(agent.activate, timestamp)
         
@@ -193,9 +194,9 @@ class World(object):
         if available_agents == []:
             return None
         # Pick the task owner at random
-        owner = random.choice(available_agents)
+        owner = self.random_number_generator.choice(available_agents)
         
-        # Subtasks are drawn from an interger log-normal distribution
+        # Subtasks are drawn from an integer log-normal distribution
         subtasks = np.random.lognormal(mean=1, sigma=0.8)
         subtasks = int(np.ceil(subtasks))
         
@@ -233,7 +234,7 @@ class World(object):
         else:
             speed = self.agent_speed
         
-        delta = (-1/speed) * np.log(random.random())
+        delta = (-1/speed) * np.log(self.random_number_generator.random())
         self._add_event(event, self.clock + delta)
         
         return True
@@ -252,8 +253,10 @@ Create a new World, with 10 agents, and run until the clock time is 20.
 if __name__ == "__main__":
     config = {"agent_count": 100,
               "initial_configuration": "Random1",
-              "max_clock": 200}
+              "max_clock": 200,
+              "random_seed": 2}
     w = World(config)
+    np.random.seed(2)
     w.init_schedules()
     while w.tick() is not None:
         print "Network density:", nx.density(w.network)

@@ -4,7 +4,7 @@ Last updated Apr 13, 2013
 
 @author: dmasad, snayar
 '''
-import random as r
+import random
 from collections import namedtuple
 from task import Task
 
@@ -204,7 +204,7 @@ class Agent(object):
             
         # Pick a task based on payoff:
         total = sum(possible_tasks.values())
-        choice = r.random() * total
+        choice = self.world.random_number_generator.random() * total
         counter = 0
         result = None
         for key, wgt in possible_tasks.items():
@@ -222,7 +222,7 @@ class Agent(object):
                 return ("COMMUNICATE", result)
         else:
             # If none, decide whether to communicate or seek:
-            if r.random() < (1 - self.centralization) and len(self.network) > 2:
+            if self.world.random_number_generator.random() < (1 - self.centralization) and len(self.network) > 2:
                 return ("COMMUNICATE", None)
             else:
                 return ("SEEK", None)
@@ -236,7 +236,7 @@ class Agent(object):
         if self.task:
             self.task.execute_subtask(self.world.clock)
         elif self.possible_tasks != []:
-            chosen_task_id = r.choice(self.possible_tasks)
+            chosen_task_id = random.choice(self.possible_tasks)
             #remove chosen_task from the list of possible_tasks
             chosen_task = self.world.tasks[chosen_task_id]
             chosen_task.execute_subtask(self.world.clock)
@@ -287,13 +287,13 @@ class Agent(object):
         '''
         source = self.world.agents[message.sender]
 
-        if r.random() < self.centralization: # TODO: Add WTH
+        if self.world.random_number_generator.random() < self.centralization: # TODO: Add WTH
             possible_connections = [neighbor for neighbor in self.network
                                         if neighbor != source.name and 
                                         neighbor not in source.network]
             if possible_connections == []: return None
                 
-            new_connection = r.choice(possible_connections)
+            new_connection = self.world.random_number_generator.choice(possible_connections)
             self.world.agents[new_connection].network.append(source.name)
             self.world.network.add_edge(source.name, new_connection)
             # Manually add the event for now
