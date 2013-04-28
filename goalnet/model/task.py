@@ -48,6 +48,7 @@ class Task(object):
     def get_subtasks_remaining(self):
         '''
         Return an estimate of how many subtasks are needed to complete the task.
+        TODO: Why do we need an estimate and not the exact subtasks needed?
         '''
         start_time = max(self.subtasks_executed) - self.timeframe
         subtasks_allowed = [timestamp for timestamp in self.subtasks_executed

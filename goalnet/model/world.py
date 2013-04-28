@@ -1,7 +1,7 @@
 '''
 Created on Apr 5, 2013
 
-@author: dmasad
+@author: dmasad, snayar
 '''
 
 from __future__ import division
@@ -147,7 +147,11 @@ class World(object):
             return None
         
         neighbor = self.random_number_generator.choice(possible_neighbors)
+        #if name == 3 or name == 4:
+        #    print "Agent %s, network before append is %s"% (name, self.agents[name].network)
         self.agents[name].network.append(neighbor)
+        #if name == 3 or name == 4:
+        #    print "Agent %s, network after append is %s"% (name, self.agents[name].network)       
         self.agents[neighbor].network.append(name)
         self.network.add_edge(name, neighbor)
     
@@ -192,9 +196,11 @@ class World(object):
         available_agents = [agent for agent in self.agents 
                                 if self.agents[agent].task is None]
         if available_agents == []:
+            print "No Agents available to work on tasks!"
             return None
         # Pick the task owner at random
         owner = self.random_number_generator.choice(available_agents)
+        print "Task assigned to %s"% owner
         
         # Subtasks are drawn from an integer log-normal distribution
         subtasks = np.random.lognormal(mean=1, sigma=0.8)
@@ -254,7 +260,7 @@ if __name__ == "__main__":
     config = {"agent_count": 100,
               "initial_configuration": "Random1",
               "max_clock": 200,
-              "random_seed": 2}
+              "random_seed": 1}
     w = World(config)
     np.random.seed(2)
     w.init_schedules()
