@@ -1,5 +1,4 @@
-console.log(goalnetData); 
-
+//console.log(goalnetData); 
 
 var width = 960,
     height = 500;
@@ -11,7 +10,7 @@ var force = d3.layout.force()
     .linkDistance(30)
     .size([width, height]);
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#network").append("svg")
     .attr("width", width)
     .attr("height", height);
 
@@ -48,3 +47,51 @@ d3.json(goalnetData, function(error, graph) {
         .attr("cy", function(d) { return d.y; });
   });
 });
+
+
+// Timeline below the network
+var context = cubism.context()
+    .step(1e4)
+    .size(1100);
+
+// Adds interval markers to timeline
+d3.select("#timeline").selectAll(".axis")
+    .data(["top", "bottom"])
+  .enter().append("div")
+    .attr("class", function(d) { return d + " axis"; })
+    .each(function(d) { d3.select(this).call(context.axis().ticks(12).orient(d)); });
+
+// Adds line to the hover
+// d3.select("#timeline").append("div")
+//     .attr("class", "rule")
+//     .call(context.rule());
+
+// Adds actual graphs to page
+d3.select("#timeline").selectAll(".horizon")
+    .data(d3.range(1, 10).map(random))
+  .enter().insert("div", ".bottom")
+    .attr("class", "horizon")
+    .call(context.horizon().extent([-10, 10]));
+
+// Moves chart values w/ mouse over
+// context.on("focus", function(i) {
+//   d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
+// });
+
+// Replace this with context.graphite and graphite.metric!
+function random(x) {
+  var value = 0,
+      values = [],
+      i = 0,
+      last;
+  return context.metric(function(start, stop, step, callback) {
+    start = +start, stop = +stop;
+    if (isNaN(last)) last = start;
+    while (last < stop) {
+      last += step;
+      value = Math.max(-10, Math.min(10, value + .8 * Math.random() - .4 + .2 * Math.cos(i += x * .02)));
+      values.push(value);
+    }
+    callback(null, values = values.slice((start - stop) / step));
+  }, x);
+}
