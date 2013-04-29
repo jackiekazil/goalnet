@@ -27,7 +27,8 @@ class Agent(object):
         greed: The proportion of task payoff an agent is inclined to keep
         beta: The discount factor on past events; currently fixed at 1.
         
-        inbox: A list that holds the agents' messages received
+        inbox: A list that holds the agents' messages received.Gets cleared by 
+               the agent every turn as the contained messages are processed
         task: Current task object; defaults to None
         possible_tasks: Tasks other agents requested help on
         turns: How many times the agent has been activated
@@ -67,7 +68,7 @@ class Agent(object):
         
         self.history = []
         self.outstanding_payoffs = {}
-        self.beta = 1 # Past discount factor
+        self.beta = 2 # Past discount factor
         
         self.task_team = []
         self.network = []
@@ -85,6 +86,7 @@ class Agent(object):
             c. Receive / Distribute payoffs
         '''
         self.turns += 1
+        
     
         # Evaluate messages
         self.possible_tasks = []
@@ -126,7 +128,7 @@ class Agent(object):
         
         # Check to see if task complete; if so, distribute payoffs
         if self.task is not None and self.task.is_complete():
-            print self.name, "Task complete!", self.task.subtasks
+            print "Task %s completed by %s!"% (self.task.task_id, self.name)
             # Distribute payoffs:
             self.task.active = False
             total_payoff = self.task.payoff
@@ -140,13 +142,20 @@ class Agent(object):
                 if wth < 0: wth = 0
                 weights[agent] = wth
                 total_weights += wth
+            
+            if total_weights ==0:
+                self.wealth += (1-self.greed) * total_payoff
             for agent in self.task_contributors:
-                payoff = (weights[agent]/total_weights)*total_payoff
+                if total_weights == 0:
+                    payoff = 0
+                else:
+                    payoff = (weights[agent]/total_weights)*total_payoff
                 message = Message(self.name, agent, self.world.clock, 'Payoff',
                                   (self.task.task_id, payoff))
                 self.world.agents[agent].get_message(message)
             self.task = None
-                
+               
+        self.inbox = [] 
                 
             
                 
@@ -171,7 +180,9 @@ class Agent(object):
                 neighbor_interactions += delta_i
             else:
                 other_interactions += delta_i
-        neighbor_interactions /= (1.0 * len(self.network))
+        #TODO: Why this division?
+        other_interactions /= (1.0 * len(self.network))
+        #TODO: other_interactions overwhelm neighbor_interactions
         wth = (neighbor_interactions + other_interactions)/2.0
         wth += (self.propensity_to_help / (current_clock)**self.beta)
         return wth  
@@ -258,7 +269,11 @@ class Agent(object):
         '''
         #TODO: Figure this out; this is just a placeholder
         #print self.name, "got message:", message
-        self.inbox.append(message)
+        for eachMessage in self.inbox:
+            if eachMessage.sender == message.sender and eachMessage.type == message.type and eachMessage.data == message.data:
+                break
+        else:
+            self.inbox.append(message)
     
     def evaluate_message(self, message):
         '''
@@ -278,7 +293,11 @@ class Agent(object):
     def process_help_request(self, message):
         #check to see if ego can help
         task_id = message.data
+        if self.name == 6:
+            pass
+        #print 'Possible Tasks for %s before append %s'% (self.name, self.possible_tasks)
         self.possible_tasks.append(task_id)
+        #print 'Possible Tasks for %s after append %s'% (self.name, self.possible_tasks)
           
         
     def process_contact_request(self, message):
@@ -287,14 +306,24 @@ class Agent(object):
         '''
         source = self.world.agents[message.sender]
 
-        if self.world.random_number_generator.random() < self.centralization: # TODO: Add WTH
+        if self.world.random_number_generator.random() > self.centralization: # TODO: Add WTH
             possible_connections = [neighbor for neighbor in self.network
                                         if neighbor != source.name and 
                                         neighbor not in source.network]
             if possible_connections == []: return None
                 
             new_connection = self.world.random_number_generator.choice(possible_connections)
+            #if new_connection == 3 or new_connection == 4:
+            #    print "Agent %s, network before append is %s"% (new_connection, self.world.agents[new_connection].network)
+            #    print "Agent %s, network before append is %s"% (source.name, self.world.agents[source.name].network)
+
+            #Update the networks of both the agents
             self.world.agents[new_connection].network.append(source.name)
+            self.world.agents[source.name].network.append(new_connection)
+
+            #if new_connection == 3 or new_connection == 4:
+            #    print "Agent %s, network after append is %s"% (new_connection, self.world.agents[new_connection].network)
+            #    print "Agent %s, network after append is %s"% (source.name, self.world.agents[source.name].network)     
             self.world.network.add_edge(source.name, new_connection)
             # Manually add the event for now
             source.history.append((self.name, 0.5, self.world.clock))
