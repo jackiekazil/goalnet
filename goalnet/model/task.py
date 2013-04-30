@@ -31,6 +31,7 @@ class Task(object):
         self.task_id = task_id
         self.active = True
         self.payoff = payoff
+        self.completed = False
         self.subtasks = subtasks
         self.timeframe = timeframe
         self.owner = owner

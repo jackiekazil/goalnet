@@ -219,6 +219,15 @@ class World(object):
         self.agents[owner].task = new_task
         self.tasks[task_id] = new_task
         
+    def completed_tasks(self):
+        count = 0
+        for task_id, task in self.tasks.iteritems():
+            if task.completed:
+                count += 1
+        return count
+            
+            
+            
     
     def tick(self):
         '''
@@ -260,11 +269,12 @@ if __name__ == "__main__":
     config = {"agent_count": 100,
               "initial_configuration": "Random1",
               "max_clock": 200,
-              "random_seed": 1}
+              "random_seed": 200}
     w = World(config)
     np.random.seed(2)
     w.init_schedules()
     while w.tick() is not None:
         print "Network density:", nx.density(w.network)
+        print "%s Tasks Completed."% (w.completed_tasks())
     
     

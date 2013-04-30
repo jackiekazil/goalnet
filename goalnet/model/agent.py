@@ -129,6 +129,7 @@ class Agent(object):
         # Check to see if task complete; if so, distribute payoffs
         if self.task is not None and self.task.is_complete():
             print "Task %s completed by %s!"% (self.task.task_id, self.name)
+            self.task.completed = True
             # Distribute payoffs:
             self.task.active = False
             total_payoff = self.task.payoff
