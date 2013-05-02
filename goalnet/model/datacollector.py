@@ -41,7 +41,17 @@ class DataCollector(object):
             wealths[agent_id] = agent.wealth
         return wealths
     
-    def collect_data(self):
+    def collect_tasks(self):
+        '''
+        Collects data on all tasks.
+        '''
+        task_data = {}
+        for task_id, task in self.world.tasks.items():
+            task_data[task_id] = task.__dict__
+        return task_data
+            
+    
+    def collect_all_data(self):
         '''
         Run all data collection functions and update the data dictionary.
         '''
@@ -49,6 +59,7 @@ class DataCollector(object):
         current_data = {}
         
         current_data["wealth"] = self.collect_wealth()
+        current_data["tasks"] = self.collect_tasks()
         #TODO: Add more functions here
         
         self.data[clock] = current_data
