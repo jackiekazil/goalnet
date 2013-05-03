@@ -8,8 +8,6 @@ from collections import defaultdict
 import json
 import csv
 
-from world import World
-
 class DataCollector(object):
     '''
     This class collects data from the world.
@@ -29,8 +27,11 @@ class DataCollector(object):
             world: The world object to collect data on.
         '''
         self.world = world
-        assert isinstance(self.world, World)
         self.data = defaultdict(dict)
+    
+    '''
+    DATA COLLECTION FUNCTIONS
+    '''
     
     def collect_wealth(self):
         '''
@@ -49,7 +50,12 @@ class DataCollector(object):
         for task_id, task in self.world.tasks.items():
             task_data[task_id] = task.__dict__
         return task_data
-            
+    
+    def collect_network(self):
+        '''
+        Collects the current state of the network.
+        '''
+        return self.world.network.copy()
     
     def collect_all_data(self):
         '''
@@ -60,9 +66,15 @@ class DataCollector(object):
         
         current_data["wealth"] = self.collect_wealth()
         current_data["tasks"] = self.collect_tasks()
+        current_data["network"] = self.collect_network()
         #TODO: Add more functions here
         
         self.data[clock] = current_data
+    
+    
+    '''
+    DATA OUTPUT FUNCTIONS
+    '''
     
     def write_json(self, filepath):
         '''
@@ -70,7 +82,6 @@ class DataCollector(object):
         '''
         with open(filepath, "wb") as f:
             json.dump(self.data, f)
-    
     
     def write_dict_csv(self, filepath, key):
         '''

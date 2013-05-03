@@ -18,6 +18,7 @@ import networkx as nx
 # Model imports
 from agent import Agent
 from task import Task
+from datacollector import DataCollector
 
 class World(object):
     '''
@@ -42,6 +43,8 @@ class World(object):
         clock: The current timestamp of the model clock.
         agent_speed: The mean interval of agent activation
         task_speed: The mean interval of task generation
+        
+        data_collector: The DataCollector object that collects model data.
     
     NOTES
     -----
@@ -84,6 +87,7 @@ class World(object):
             "agent_speed": Scaling factor for scheduling; defaults to 1.
             "task_speed": How often new tasks are assigned; defaults to 1
             "max_clock": The maximum clock tick to run until
+            "collection_intervals": Frequency of data collection; defaults to 1
         '''
         
         self.agent_count = config["agent_count"]
@@ -111,6 +115,12 @@ class World(object):
         self.task_speed = 1
         if "task_speed" in config:
             self.task_speed = config["task_speed"]
+        
+        self.data_collector = DataCollector(self)
+        self.data_collection_freq = 1
+        if "collection_intervals" in config:
+            self.data_collection_freq = config["collection_intervals"]
+        
         
         self.max_clock = None 
         if "max_clock" in config:
@@ -164,6 +174,11 @@ class World(object):
             some tasks to be assigned before agents begin to be active. 
         '''
         
+        #Schedule data collection:
+        self._add_event(self.data_collector.collect_all_data, 
+                        self.data_collection_freq)
+        
+        # Schedule task creation
         timestamp = (-1/self.task_speed) * np.log(self.random_number_generator.random())
         self._add_event(self.create_task, timestamp)
         
@@ -242,16 +257,17 @@ class World(object):
             return None # End if max time reached.
         
         event()
+        # Reschedule events:
+        if event == self.data_collector.collect_all_data:
+            self._add_event(event, self.clock + self.data_collection_freq)
+            return True
         
-        # Reschedule event:
-        if event == self.create_task:
+        elif event == self.create_task:
             speed = self.task_speed
         else:
             speed = self.agent_speed
-        
         delta = (-1/speed) * np.log(self.random_number_generator.random())
         self._add_event(event, self.clock + delta)
-        
         return True
     
          
@@ -266,9 +282,9 @@ Create a new World, with 10 agents, and run until the clock time is 20.
 """
 
 if __name__ == "__main__":
-    config = {"agent_count": 100,
+    config = {"agent_count": 50,
               "initial_configuration": "Random1",
-              "max_clock": 200,
+              "max_clock": 100,
               "random_seed": 200}
     w = World(config)
     np.random.seed(2)

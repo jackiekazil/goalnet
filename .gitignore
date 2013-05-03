@@ -33,3 +33,5 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+goalnet/static/data/runs/test_run2/.DS_Store
