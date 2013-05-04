@@ -57,6 +57,16 @@ class DataCollector(object):
         '''
         return self.world.network.copy()
     
+    def collect_task_network(self):
+        '''
+        Collects data on the network formed by the task performance relationships
+        '''
+        task_network = {}
+        for task_id, task in self.world.tasks.iteritems():
+            if task.completed:
+                task_network[task_id] = (task.owner, task.workers)
+        return task_network
+    
     def collect_all_data(self):
         '''
         Run all data collection functions and update the data dictionary.
@@ -67,6 +77,7 @@ class DataCollector(object):
         current_data["wealth"] = self.collect_wealth()
         current_data["tasks"] = self.collect_tasks()
         current_data["network"] = self.collect_network()
+        current_data["task_network"] = self.collect_task_network()
         #TODO: Add more functions here
         
         self.data[clock] = current_data

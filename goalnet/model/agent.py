@@ -118,6 +118,7 @@ class Agent(object):
                 message = Message(self.name, task.owner, self.world.clock,
                                   'Acknowledgment', task.task_id)
                 self.world.agents[task.owner].get_message(message)
+                self.world.tasks[task.task_id].workers.append(self.name)
                 
         elif action == 'SEEK':
             #look for an introduction from another agent in network
@@ -130,6 +131,7 @@ class Agent(object):
         if self.task is not None and self.task.is_complete():
             print "Task %s completed by %s!"% (self.task.task_id, self.name)
             self.task.completed = True
+            self.task.workers.append(self.name)
             # Distribute payoffs:
             self.task.active = False
             total_payoff = self.task.payoff
