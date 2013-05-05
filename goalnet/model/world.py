@@ -301,7 +301,8 @@ if __name__ == "__main__":
     np.random.seed(2)
     w.init_schedules()
     while w.tick() is not None:
-        print "Network density:", nx.density(w.network)
-        print "%s Tasks Completed."% (w.completed_tasks())
-    w.data_collector.write_dict_csv('out.csv', 'willingness_to_help')
+        if w.clock % 10 == 0: print w.clock
+        #print "Network density:", nx.density(w.network)
+        #print "%s Tasks Completed."% (w.completed_tasks())
+    w.data_collector.export()
     

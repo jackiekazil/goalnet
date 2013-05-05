@@ -62,16 +62,31 @@ class DataCollector(object):
         '''
         return self.world.network.copy()
     
-    def collect_task_network(self):
+    def collect_task_network(self, include_data = True):
         '''
-        Collects data on the network formed by the task performance relationships
-        For a given task, it collects the task owner and then the list of all the workers
+        Collects data on the network formed by the task performance relationships.
+        
+        Returns a directed graph, with edges directed to the task owner.
+        
+        Args:
+            include_data: if True, include node attributes.
+        
         '''
         task_network = nx.DiGraph()
         for task_id, task in self.world.tasks.iteritems():
             for worker in task.workers:
                 task_network.add_edge(worker, task.owner)
+        
+        if not include_data:
+            return task_network
+        
+        for agent_id in task_network.nodes():
+            agent = self.world.agents[agent_id]
+            task_network.node[agent_id]['wealth'] = float(agent.wealth)
+            task_network.node[agent_id]['greed'] = float(agent.greed)
+            task_network.node[agent_id]['centralization'] = float(agent.centralization)
         return task_network
+            
     
     def willingness_to_help(self):
         '''
