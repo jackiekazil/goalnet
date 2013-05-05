@@ -88,8 +88,8 @@ class DataCollector(object):
         current_data["wealth"] = self.collect_wealth()
         current_data["tasks"] = self.collect_tasks()
         current_data["network"] = self.collect_network()
-        current_data["task_network"] = self.collect_task_network()
-        current_data["willingness_to_help"] = self.willingness_to_help()
+        #current_data["task_network"] = self.collect_task_network()
+        #current_data["willingness_to_help"] = self.willingness_to_help()
         #TODO: Add more functions here
         
         self.data[clock] = current_data

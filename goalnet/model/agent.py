@@ -95,7 +95,7 @@ class Agent(object):
         
         # Choose action
         action, target = self._choose_action()
-        print self.name, action
+        #print self.name, action
         
         # Take action
         if action == 'COMMUNICATE':
@@ -129,7 +129,7 @@ class Agent(object):
         
         # Check to see if task complete; if so, distribute payoffs
         if self.task is not None and self.task.is_complete():
-            print "Task %s completed by %s!"% (self.task.task_id, self.name)
+            #print "Task %s completed by %s!"% (self.task.task_id, self.name)
             self.task.completed = True
             self.task.workers.append(self.name)
             # Distribute payoffs:

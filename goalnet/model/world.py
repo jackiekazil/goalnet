@@ -91,7 +91,10 @@ class World(object):
         '''
         
         self.agent_count = config["agent_count"]
-        self.random_number_generator = random.Random(config["random_seed"])
+        if "random_seed" in config:
+            self.random_number_generator = random.Random(config["random_seed"])
+        else:
+            self.random_number_generator = random.Random()
         self.network = nx.Graph()
         self.agents = {}
         for agent_id in range(self.agent_count):
@@ -205,17 +208,17 @@ class World(object):
         TODO: have the task parameters change over time. 
         '''
         
-        print "Generating task" #Placeholder
+        #print "Generating task" #Placeholder
         
         # Find out if there are any agents available
         available_agents = [agent for agent in self.agents 
                                 if self.agents[agent].task is None]
         if available_agents == []:
-            print "No Agents available to work on tasks!"
+            #print "No Agents available to work on tasks!"
             return None
         # Pick the task owner at random
         owner = self.random_number_generator.choice(available_agents)
-        print "Task assigned to %s"% owner
+        #print "Task assigned to %s"% owner
         
         # Subtasks are drawn from an integer log-normal distribution
         subtasks = np.random.lognormal(mean=1, sigma=0.8)
