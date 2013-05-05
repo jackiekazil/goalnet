@@ -35,3 +35,5 @@ nosetests.xml
 .pydevproject
 
 goalnet/static/data/runs/test_run2/.DS_Store
+
+goalnet/outputs/78b47f24-fd07-48c2-bd38-a0b272f0ce31/config.json
