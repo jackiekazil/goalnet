@@ -7,6 +7,10 @@ Created on May 1, 2013
 from collections import defaultdict
 import json
 import csv
+import uuid
+import os
+
+import networkx as nx
 
 class DataCollector(object):
     '''
@@ -28,6 +32,7 @@ class DataCollector(object):
         '''
         self.world = world
         self.data = defaultdict(dict)
+        self.uuid = uuid.uuid4()
     
     '''
     DATA COLLECTION FUNCTIONS
@@ -62,10 +67,10 @@ class DataCollector(object):
         Collects data on the network formed by the task performance relationships
         For a given task, it collects the task owner and then the list of all the workers
         '''
-        task_network = {}
+        task_network = nx.DiGraph()
         for task_id, task in self.world.tasks.iteritems():
-            if task.completed:
-                task_network[task_id] = (task.owner, task.workers)
+            for worker in task.workers:
+                task_network.add_edge(worker, task.owner)
         return task_network
     
     def willingness_to_help(self):
@@ -75,7 +80,7 @@ class DataCollector(object):
         '''
         willingness_to_help = {}
         for agent_id, agent in self.world.agents.items():
-            willingness_to_help[agent_id] = agent.calculateWTH()
+            willingness_to_help[agent_id] = agent.wth
         return willingness_to_help
     
     def collect_all_data(self):
@@ -88,8 +93,8 @@ class DataCollector(object):
         current_data["wealth"] = self.collect_wealth()
         current_data["tasks"] = self.collect_tasks()
         current_data["network"] = self.collect_network()
-        #current_data["task_network"] = self.collect_task_network()
-        #current_data["willingness_to_help"] = self.willingness_to_help()
+        current_data["task_network"] = self.collect_task_network()
+        current_data["willingness_to_help"] = self.willingness_to_help()
         #TODO: Add more functions here
         
         self.data[clock] = current_data
@@ -98,13 +103,41 @@ class DataCollector(object):
     '''
     DATA OUTPUT FUNCTIONS
     '''
+        
+    def export(self):
+        '''
+        Export all data.
+        '''
+        path = "../outputs/" + str(self.uuid)
+        os.mkdir(path)
+        path += "/"
+        
+        # Save configuration
+        with open(path + "config.json", "wb") as f:
+            json.dump(self.world.config, f)
+        
+        # Write the time series of dicts
+        self.write_json(path + "data.json")
+        
+        # Write last task graph
+        last_task_graph = self.data[max(self.data)]["task_network"]
+        nx.write_graphml(last_task_graph, path+"last_task_graph.graphml")
+        
+    
     
     def write_json(self, filepath):
         '''
         Export all the data collected so far to one big json.
         '''
+        json_out = {}
+        for key in self.data:
+            current_out = {}
+            for var in ["wealth", "tasks", "willingness_to_help"]:
+                current_out[var] = self.data[key][var]
+            json_out[key] = current_out
+
         with open(filepath, "wb") as f:
-            json.dump(self.data, f)
+            json.dump(json_out, f)
     
     def write_dict_csv(self, filepath, key):
         '''

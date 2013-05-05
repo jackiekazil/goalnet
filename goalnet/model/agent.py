@@ -72,6 +72,7 @@ class Agent(object):
         
         self.task_team = []
         self.network = []
+        self.wth = {} # Most recent willingness-to-help for each neighbor
         
         self.wealth = 0 #This could be the cumulative payoffs
         
@@ -170,7 +171,7 @@ class Agent(object):
         Takes into account both the interactions with that specific agent
         and with all others.
         
-        Returns the computed WTH number.
+        Returns the computed WTH number, and logs it in self.wth[neighbor]
         '''    
         
         neighbor_interactions = 0
@@ -188,16 +189,8 @@ class Agent(object):
         #TODO: other_interactions overwhelm neighbor_interactions
         wth = (neighbor_interactions + other_interactions)/2.0
         wth += (self.propensity_to_help / (current_clock)**self.beta)
-        return wth  
-         
-    def calculateWTH(self):
-        neighbor_wth = []
-        
-        for eachNeighbor in self.network:
-            neighbor_tuple = eachNeighbor, self._willingness_to_help(eachNeighbor)
-            neighbor_wth.append(neighbor_tuple)
-        
-        return neighbor_wth
+        self.wth[neighbor] = wth
+        return wth
             
     
     def _choose_action(self):

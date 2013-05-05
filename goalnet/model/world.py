@@ -78,7 +78,7 @@ class World(object):
         Args:
         config: A dictionary containing all (or some of) the model
         configuration parameters, as follows:
-            
+            "random_seed": A random seed, for replication purposes
             "agent_count": How many agents to initiate the model with
             "initial_configuration": How to start off the network
                 "None": No connections between agents (default)
@@ -89,12 +89,13 @@ class World(object):
             "max_clock": The maximum clock tick to run until
             "collection_intervals": Frequency of data collection; defaults to 1
         '''
-        
+        self.config = config
         self.agent_count = config["agent_count"]
         if "random_seed" in config:
             self.random_number_generator = random.Random(config["random_seed"])
         else:
             self.random_number_generator = random.Random()
+            self.config["random_seed"] = "None"
         self.network = nx.Graph()
         self.agents = {}
         for agent_id in range(self.agent_count):
@@ -103,7 +104,8 @@ class World(object):
             greed = self.random_number_generator.random() #random.random()
             self.agents[agent_id] = Agent(agent_id, self, pth, cent, greed)
         
-        if config["initial_configuration"] == "None":
+        if "initial_configuration" not in config or config["initial_configuration"] == "None":
+            self.config["initial_configuration"] = "None"
             for agent_id in self.agents:
                 self.network.add_node(agent_id)
         elif config["initial_configuration"] == "Random1":
@@ -115,20 +117,26 @@ class World(object):
         self.agent_speed = 1
         if "agent_speed" in config:
             self.agent_speed = config["agent_speed"]
+        else: self.config["agent_speed"] = self.agent_speed
         self.task_speed = 1
         if "task_speed" in config:
             self.task_speed = config["task_speed"]
+        else: self.config["task_speed"] = self.task_speed
         
-        self.data_collector = DataCollector(self)
         self.data_collection_freq = 1
         if "collection_intervals" in config:
             self.data_collection_freq = config["collection_intervals"]
+        else:
+            self.config["collection_intervals"] = self.data_collection_freq 
         
         
         self.max_clock = None 
         if "max_clock" in config:
             self.max_clock = config["max_clock"]
+        else: self.config["max_clock"] = "None"
+            
         
+        self.data_collector = DataCollector(self)
         
         self.clock = 0
         self.queue = []
