@@ -190,6 +190,14 @@ class Agent(object):
         wth += (self.propensity_to_help / (current_clock)**self.beta)
         return wth  
          
+    def calculateWTH(self):
+        neighbor_wth = []
+        
+        for eachNeighbor in self.network:
+            neighbor_tuple = eachNeighbor, self._willingness_to_help(eachNeighbor)
+            neighbor_wth.append(neighbor_tuple)
+        
+        return neighbor_wth
             
     
     def _choose_action(self):

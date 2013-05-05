@@ -60,12 +60,23 @@ class DataCollector(object):
     def collect_task_network(self):
         '''
         Collects data on the network formed by the task performance relationships
+        For a given task, it collects the task owner and then the list of all the workers
         '''
         task_network = {}
         for task_id, task in self.world.tasks.iteritems():
             if task.completed:
                 task_network[task_id] = (task.owner, task.workers)
         return task_network
+    
+    def willingness_to_help(self):
+        '''
+        Collects the data on each agent's Willingness to Help others
+        The dictionary has, {key: agent_id, value: [(agent1, WTH),(agent2, WTH),...]}
+        '''
+        willingness_to_help = {}
+        for agent_id, agent in self.world.agents.items():
+            willingness_to_help[agent_id] = agent.calculateWTH()
+        return willingness_to_help
     
     def collect_all_data(self):
         '''
@@ -78,6 +89,7 @@ class DataCollector(object):
         current_data["tasks"] = self.collect_tasks()
         current_data["network"] = self.collect_network()
         current_data["task_network"] = self.collect_task_network()
+        current_data["willingness_to_help"] = self.willingness_to_help()
         #TODO: Add more functions here
         
         self.data[clock] = current_data

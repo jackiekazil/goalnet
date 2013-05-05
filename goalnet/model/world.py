@@ -292,5 +292,5 @@ if __name__ == "__main__":
     while w.tick() is not None:
         print "Network density:", nx.density(w.network)
         print "%s Tasks Completed."% (w.completed_tasks())
-    w.data_collector.write_dict_csv('out.csv', 'task_network')
+    w.data_collector.write_dict_csv('out.csv', 'willingness_to_help')
     
