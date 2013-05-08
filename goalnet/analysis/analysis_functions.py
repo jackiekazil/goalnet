@@ -5,6 +5,8 @@ Created on May 5, 2013
 
 A set of functions to analyze model output files.
 '''
+import json
+import exceptions
 
 OUTPUT_PATH = "../outputs/"
 
@@ -60,9 +62,9 @@ def count_tasks(data):
     '''
     active_tasks = []
     complete_tasks = []
-    
-    for k, d in data.iteritems():
-        tasks = d["tasks"]
+    keys = sorted(data.keys())
+    for key in keys:
+        tasks = data[key]["tasks"]
         active = 0
         complete = 0
         for t in tasks.values():
@@ -70,4 +72,27 @@ def count_tasks(data):
             else: complete += 1
         active_tasks.append(active)
         complete_tasks.append(complete)
-    return (active_tasks, complete_tasks)
+    return (keys, active_tasks, complete_tasks)
+
+def get_ginis(data):
+    '''
+    Get the gini coefficient for each timestep.
+    '''
+    keys = sorted(data.keys())
+    ginis = []
+    
+    for key in keys:
+        wealths = sorted(data[key]["wealth"].values())
+        sum_iy = 0
+        sum_y = 0
+        n = len(wealths)
+        for i, y in enumerate(wealths):
+            sum_iy += i*y
+            sum_y += y
+        if sum_y > 0:
+            gini = ((2.0*sum_iy)/(n*sum_y)) - ((n + 1.0)/n)
+        else:
+            gini = 0
+        ginis.append(gini)
+    return ginis
+        
