@@ -16,7 +16,7 @@ from world import World
 Pass 3 - Evening May 07
 ----------------------------
 
-Agent count = 400 is taking far too long. Reducing to 200 and running many more.
+Agent count = 400 is taking far too long. Reducing and running many more.
 
 max_clock is agent_count
 set the data collector to run once every agent_count/50 timesteps.
@@ -24,13 +24,12 @@ set the data collector to run once every agent_count/50 timesteps.
 Will be executed in parallel manually via the terminal.
 * * * 
 '''
-num_runs = 1 # Number of runs per combination
-agent_counts = [100, 200]
-
+num_runs = 4 # Number of runs per combination
+agent_counts = [200, 300]
 for count in agent_counts:
     config = {"initial_configuration": "Random1",
               "agent_count": count,
-              "max_clock": count * 2,
+              "max_clock": count * 4,
               "collection_intervals": count/50
               }
     print "New Run:", count
