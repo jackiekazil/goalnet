@@ -12,6 +12,39 @@ accordingly.
 
 from world import World
 
+
+'''
+Pass 4 - May 09
+----------------------------
+
+* * * 
+'''
+num_runs = 5 # Number of runs per combination
+agent_count = 200
+task_speeds = [2, 4, 8, 16]
+for run in range(num_runs):
+  for task_speed in task_speeds:
+      config = {"initial_configuration": "Random1",
+                "agent_count": agent_count,
+                "max_clock": agent_count * 2,
+                "collection_intervals": agent_count/50,
+                "task_speed": task_speed
+                }
+      print "New Run:", task_speed
+      w = World(config)
+      w.init_schedules()
+      while w.tick() is not None:
+          if w.clock % 10 == 0: print w.clock
+      w.data_collector.export()
+print "Done!"
+
+'''
+End Pass 3
+----------
+'''
+
+
+
 '''
 Pass 3 - Evening May 07
 ----------------------------
@@ -23,7 +56,7 @@ set the data collector to run once every agent_count/50 timesteps.
 
 Will be executed in parallel manually via the terminal.
 * * * 
-'''
+
 num_runs = 4 # Number of runs per combination
 agent_counts = [200, 300]
 for count in agent_counts:
@@ -40,10 +73,10 @@ for count in agent_counts:
     w.data_collector.export()
 print "Done!"
 
-'''
 End Pass 3
 ----------
 '''
+
 
 
 

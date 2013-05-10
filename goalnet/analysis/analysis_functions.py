@@ -6,7 +6,9 @@ Created on May 5, 2013
 A set of functions to analyze model output files.
 '''
 import json
+import os
 import exceptions
+import networkx as nx
 
 OUTPUT_PATH = "../outputs/"
 
@@ -50,6 +52,14 @@ def load_data(path):
         data_raw = json.load(f)
     data = recode_dict(data_raw)
     return data
+
+def iterate_over_data(base_path):
+    '''
+    Iterate over data files, loading and yielding one at a time.
+    '''
+    for run_dir in os.listdir(base_path):
+        yield load_data(base_path + run_dir + "/data.json")
+
 
 '''
 ANALYSIS FUNCTIONS
@@ -95,4 +105,42 @@ def get_ginis(data):
             gini = 0
         ginis.append(gini)
     return ginis
-        
+
+
+'''
+NETWORK ANALYSIS FUNCTIONS
+'''
+
+def iterate_over_networks(base_path):
+    '''
+    Iterate over network files, loading and yielding one at a time.
+    '''
+    for run_dir in os.listdir(base_path):
+        try:
+            yield nx.read_graphml(base_path + run_dir + "/last_task_graph.graphml")
+        except:
+            pass
+
+
+
+def get_agent_data(G):
+    '''
+    Get the agent attributes and stats loaded from a model output graph.
+
+    Returns a list of dictionaries.
+    '''
+    agent_count = len(G)
+    agent_data = []
+
+    betweenness = nx.betweenness_centrality(G)
+    closeness = nx.closeness_centrality(G)
+    for node, params in G.nodes(data=True):
+        node_data = params
+        node_data['in_deg'] = G.in_degree(node)
+        node_data['out_deg'] = G.out_degree(node)
+        node_data['closeness'] = closeness[node]
+        node_data['betweenness'] = betweenness[node]
+        node_data['total_agent_count'] = agent_count
+        agent_data.append(node_data)
+    return agent_data
+
