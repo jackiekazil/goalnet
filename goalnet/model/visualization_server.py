@@ -16,9 +16,9 @@ from world import World
 
 # Model configuration:
 model_config = {"initial_configuration": "None",
-            "agent_count": 50,
+            "agent_count": 100,
             "max_clock": 100,
-            "collection_intervals": 2,
+            "collection_intervals": 4,
             "task_speed": 1
 }
 

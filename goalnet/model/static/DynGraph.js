@@ -113,7 +113,7 @@ function DynamicGraph(el, width, height) {
             .call(force.drag);
 
         nodeEnter.append("svg:circle")
-        .attr("r", 16)
+        .attr("r", 4)
         .attr("id",function(d) { return "Node;"+d.id;})
         .attr("class","nodeStrokeClass");
 
