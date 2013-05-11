@@ -122,7 +122,6 @@ def iterate_over_networks(base_path):
             pass
 
 
-
 def get_agent_data(G):
     '''
     Get the agent attributes and stats loaded from a model output graph.
@@ -144,3 +143,39 @@ def get_agent_data(G):
         agent_data.append(node_data)
     return agent_data
 
+
+def get_network_statistics(G):
+    '''
+    Compute key nework statistics for 
+    '''
+    size = len(G)
+    density = nx.density(G)
+    #diameter = nx.diameter(G)
+
+    clustering = nx.average_clustering(G.to_undirected())
+    transitivity = nx.transitivity(G.to_undirected())
+    grc = global_reaching_centrality(G)
+    return {"size": size,
+            "density": density,
+            #"diameter": diameter,
+            "clustering": clustering,
+            "transitivity": transitivity,
+            "grc": grc}
+
+
+
+
+
+def global_reaching_centrality(G):
+    '''
+    Compute the Global Reaching Centrality measure of heirarchy.
+    
+    '''
+
+    reaching_scores = nx.closeness_centrality(G).values()
+    cr_max = max(reaching_scores)
+    grc = 0
+    for cr in reaching_scores:
+        grc += (cr_max - cr)
+    grc = grc / (len(reaching_scores) - 1.0)
+    return grc
