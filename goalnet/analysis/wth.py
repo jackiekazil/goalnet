@@ -27,20 +27,16 @@ def get_agent_wth_by_ts(data):
         avg_by_agent[agent][timestep] == average of wth for each timestep
     '''
     avg_by_agent = {}
-    # ts == timestamp
+    # ts is timestamp
     for ts in data:
         ts_wth = data[ts]['willingness_to_help']
-        print '############TIME: ', ts 
         for agent in ts_wth:
-            print 'Agent: ', agent
-            print ts_wth[agent]
             agent_avg = np.mean(ts_wth[agent].values())
             try:
                 avg_by_agent[agent][ts] = agent_avg
             except KeyError:
                 avg_by_agent[agent] = {}
                 avg_by_agent[agent][ts] = agent_avg
-    
     return avg_by_agent
 
 def get_agent_wth_avg_all_runs(agent_wth_avgs):
