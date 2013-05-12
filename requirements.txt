@@ -1,2 +1,12 @@
+numpy==1.7.1
+matplotlib==1.2.1
 
-flask=0.9
+# pyzmq req to run ipython notebooks
+pyzmq==13.1.0
+
+# tornado req to run ipython notebooks & live demo
+tornado==3.0.1
+
+# req only to run notebooks
+ipython==0.13.2
+networkx==1.7
