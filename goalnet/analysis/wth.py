@@ -1,22 +1,47 @@
 import numpy as np
 
+"""
+Source data format
+{timestamp:
+        {"willingness_to_help": 
+                    {source_agent_id: {
+                                target_1: WTH,
+                                target_2: WTH,
+                                ...
+                                },
+                    source_id2: {
+                            ...
+                            },
+                    ...
+        {,
+timestamp 2: {...}
+...
+}
+"""
 
-def get_agent_wth_avg(data):
+def get_agent_wth_by_ts(data):
     '''
     Calculates the average willingness to help 
     for each agent by timestep. 
     Returns a dictionary of... 
-        wtf_by_agent[agent][timestep] == average of wth for each timestep
+        avg_by_agent[agent][timestep] == average of wth for each timestep
     '''
-
-    wth_by_agent = {}
-    for agent in data:
-        wth_by_agent[agent] = {}
-        for timestep in data[agent]['willingness_to_help']:
-            t_avg = np.mean(data[agent]['willingness_to_help'][timestep].values())
-            wth_by_agent[agent][timestep] = t_avg
-
-    return wth_by_agent
+    avg_by_agent = {}
+    # ts == timestamp
+    for ts in data:
+        ts_wth = data[ts]['willingness_to_help']
+        print '############TIME: ', ts 
+        for agent in ts_wth:
+            print 'Agent: ', agent
+            print ts_wth[agent]
+            agent_avg = np.mean(ts_wth[agent].values())
+            try:
+                avg_by_agent[agent][ts] = agent_avg
+            except KeyError:
+                avg_by_agent[agent] = {}
+                avg_by_agent[agent][ts] = agent_avg
+    
+    return avg_by_agent
 
 def get_agent_wth_avg_all_runs(agent_wth_avgs):
     '''
