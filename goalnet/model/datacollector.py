@@ -95,7 +95,11 @@ class DataCollector(object):
         '''
         willingness_to_help = {}
         for agent_id, agent in self.world.agents.items():
-            willingness_to_help[agent_id] = agent.wth
+            current_wth = {}
+            for key, val in agent.wth.items():
+                current_wth[key] = val
+            willingness_to_help[agent_id] = current_wth
+        
         return willingness_to_help
     
     def collect_all_data(self):
