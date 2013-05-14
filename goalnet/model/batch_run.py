@@ -19,9 +19,9 @@ Pass 4 - May 09
 
 * * * 
 '''
-num_runs = 5 # Number of runs per combination
-agent_count = 200
-task_speeds = [2, 4, 8, 16]
+num_runs = 3 # Number of runs per combination
+agent_count = 100
+task_speeds = [1, 2, 4, 8, 16]
 for run in range(num_runs):
   for task_speed in task_speeds:
       config = {"initial_configuration": "Random1",
