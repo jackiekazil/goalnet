@@ -58,7 +58,10 @@ def iterate_over_data(base_path):
     Iterate over data files, loading and yielding one at a time.
     '''
     for run_dir in os.listdir(base_path):
-        yield load_data(base_path + run_dir + "/data.json")
+        try:
+            yield load_data(base_path + run_dir + "/data.json")
+        except:
+            pass
 
 
 '''
