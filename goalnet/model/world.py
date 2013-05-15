@@ -83,25 +83,32 @@ class World(object):
             "initial_configuration": How to start off the network
                 "None": No connections between agents (default)
                 "Random1": For each agent, connect to another random agent
-                TODO: Add the rest
             "agent_speed": Scaling factor for scheduling; defaults to 1.
             "task_speed": How often new tasks are assigned; defaults to 1
             "max_clock": The maximum clock tick to run until
             "collection_intervals": Frequency of data collection; defaults to 1
         '''
         self.config = config
+        #set the agent count from the config file
         self.agent_count = config["agent_count"]
+        
+        #Use the random seed from config file if available
         if "random_seed" in config:
             self.random_number_generator = random.Random(config["random_seed"])
         else:
             self.random_number_generator = random.Random()
             self.config["random_seed"] = "None"
+            
         self.network = nx.Graph()
+        
+        #initialize the agents
         self.agents = {}
+        
+        #For each agent set the Propensity to Help (pth), Centralization (cent), and greed
         for agent_id in range(self.agent_count):
-            pth = self.random_number_generator.random() #random.random()
-            cent = self.random_number_generator.random() #random.random()
-            greed = self.random_number_generator.random() #random.random()
+            pth = self.random_number_generator.random()
+            cent = self.random_number_generator.random()
+            greed = self.random_number_generator.random()
             self.agents[agent_id] = Agent(agent_id, self, pth, cent, greed)
         
         if "initial_configuration" not in config or config["initial_configuration"] == "None":
@@ -113,29 +120,32 @@ class World(object):
                 self.random_new_neighbor(agent_id)
                 
                 
-        
+        #set the speed with which agent will get turns
         self.agent_speed = 1
         if "agent_speed" in config:
             self.agent_speed = config["agent_speed"]
         else: self.config["agent_speed"] = self.agent_speed
+        
+        #set the speed with which tasks will get generated
         self.task_speed = 1
         if "task_speed" in config:
             self.task_speed = config["task_speed"]
         else: self.config["task_speed"] = self.task_speed
         
+        #set the frequency with which data will get collected
         self.data_collection_freq = 1
         if "collection_intervals" in config:
             self.data_collection_freq = config["collection_intervals"]
         else:
             self.config["collection_intervals"] = self.data_collection_freq 
         
-        
+        #set the maximum clock for the runs
         self.max_clock = None 
         if "max_clock" in config:
             self.max_clock = config["max_clock"]
         else: self.config["max_clock"] = "None"
             
-        
+        #initialize the data collector
         self.data_collector = DataCollector(self)
         
         self.clock = 0
@@ -143,7 +153,6 @@ class World(object):
         
         self.tasks = {}
             
-        #TODO: Fill in additional config
     
     def _add_event(self, event, timestamp):
         '''
@@ -160,19 +169,20 @@ class World(object):
         Get the specified agent a new neighbor at random.
         
         Updates the agent's network list and the overall network object. 
+        
+        Args:
+            name: The name of the agent for which the new neighbor is sought
         '''
+        #make a list of possible neighbors from agents not connected to this agent
         possible_neighbors = [agent_id for agent_id in self.agents
                               if agent_id != name and  
                               not self.network.has_edge(agent_id, name)]
         if possible_neighbors == []:
             return None
         
+        #select an agent at random from the list of possible agents
         neighbor = self.random_number_generator.choice(possible_neighbors)
-        #if name == 3 or name == 4:
-        #    print "Agent %s, network before append is %s"% (name, self.agents[name].network)
         self.agents[name].network.append(neighbor)
-        #if name == 3 or name == 4:
-        #    print "Agent %s, network after append is %s"% (name, self.agents[name].network)       
         self.agents[neighbor].network.append(name)
         self.network.add_edge(name, neighbor)
     
@@ -213,20 +223,16 @@ class World(object):
             where payoff_noise is normally-distributed, with mean=0 and sd=1
         If Payoff < 1, it is coerced to 1.
         
-        TODO: have the task parameters change over time. 
         '''
         
-        #print "Generating task" #Placeholder
-        
+       
         # Find out if there are any agents available
         available_agents = [agent for agent in self.agents 
                                 if self.agents[agent].task is None]
         if available_agents == []:
-            #print "No Agents available to work on tasks!"
             return None
         # Pick the task owner at random
         owner = self.random_number_generator.choice(available_agents)
-        #print "Task assigned to %s"% owner
         
         # Subtasks are drawn from an integer log-normal distribution
         subtasks = np.random.lognormal(mean=1, sigma=0.8)
@@ -241,11 +247,18 @@ class World(object):
         timeframe = self.agent_speed * 2 # Timeframe fixed for now.
         task_id = len(self.tasks) + 1
         
+        #create the new task
         new_task = Task(task_id, payoff, subtasks, timeframe, owner)
+        
+        #Assign the new task
         self.agents[owner].task = new_task
         self.tasks[task_id] = new_task
-        
+
+
     def completed_tasks(self):
+        '''
+        Count the number of completed tasks
+        '''
         count = 0
         for task_id, task in self.tasks.iteritems():
             if task.completed:
@@ -302,7 +315,5 @@ if __name__ == "__main__":
     w.init_schedules()
     while w.tick() is not None:
         if w.clock % 10 == 0: print w.clock
-        #print "Network density:", nx.density(w.network)
-        #print "%s Tasks Completed."% (w.completed_tasks())
     w.data_collector.export()
     

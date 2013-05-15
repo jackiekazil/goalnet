@@ -247,6 +247,9 @@ class Agent(object):
     
         
     def choose_task(self):
+        '''
+        Choose a task for this turn.
+        '''
         #if self task exists then decide to do that or select a task from the possible tasks
         if self.task:
             self.task.execute_subtask(self.world.clock)
@@ -271,12 +274,11 @@ class Agent(object):
         Args:
             message: A message object to be added to the inbox
         '''
-        #TODO: Figure this out; this is just a placeholder
-        #print self.name, "got message:", message
         for eachMessage in self.inbox:
+            #ignore non-unique messages
             if eachMessage.sender == message.sender and eachMessage.type == message.type and eachMessage.data == message.data:
                 break
-        else:
+        else:#else append the message to the inbox
             self.inbox.append(message)
     
     def evaluate_message(self, message):
@@ -295,13 +297,9 @@ class Agent(object):
     
     
     def process_help_request(self, message):
-        #check to see if ego can help
+        #Add the task to list of possible tasks to choose from at a later time
         task_id = message.data
-        if self.name == 6:
-            pass
-        #print 'Possible Tasks for %s before append %s'% (self.name, self.possible_tasks)
         self.possible_tasks.append(task_id)
-        #print 'Possible Tasks for %s after append %s'% (self.name, self.possible_tasks)
           
         
     def process_contact_request(self, message):
@@ -310,24 +308,18 @@ class Agent(object):
         '''
         source = self.world.agents[message.sender]
 
-        if self.world.random_number_generator.random() > self.centralization: # TODO: Add WTH
+        if self.world.random_number_generator.random() > self.centralization: 
             possible_connections = [neighbor for neighbor in self.network
                                         if neighbor != source.name and 
                                         neighbor not in source.network]
             if possible_connections == []: return None
                 
             new_connection = self.world.random_number_generator.choice(possible_connections)
-            #if new_connection == 3 or new_connection == 4:
-            #    print "Agent %s, network before append is %s"% (new_connection, self.world.agents[new_connection].network)
-            #    print "Agent %s, network before append is %s"% (source.name, self.world.agents[source.name].network)
 
             #Update the networks of both the agents
             self.world.agents[new_connection].network.append(source.name)
             self.world.agents[source.name].network.append(new_connection)
 
-            #if new_connection == 3 or new_connection == 4:
-            #    print "Agent %s, network after append is %s"% (new_connection, self.world.agents[new_connection].network)
-            #    print "Agent %s, network after append is %s"% (source.name, self.world.agents[source.name].network)     
             self.world.network.add_edge(source.name, new_connection)
             # Manually add the event for now
             source.history.append((self.name, 0.5, self.world.clock))
