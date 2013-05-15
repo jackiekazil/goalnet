@@ -1,5 +1,7 @@
 Goalnet
 =======
+### Jacqueline Kazil, David Masad, Sanjay Nayar, Melanie Swartz
+### CSS 610, Spring 2013
 
 Goalnet is an ABM written in Python that attempts to model informal social and economic coordination frequently occurs across networks, with the shape of the network both shaping the interactions and being shaped by them. 
 
