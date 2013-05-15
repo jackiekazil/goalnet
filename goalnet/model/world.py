@@ -1,5 +1,7 @@
 '''
-Created on Apr 5, 2013
+GoalNet World Class
+====================
+
 
 @author: dmasad, snayar
 '''

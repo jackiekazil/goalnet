@@ -1,5 +1,6 @@
 '''
-Created on May 1, 2013
+GoalNet Data Collector
+======================
 
 @author: dmasad
 '''

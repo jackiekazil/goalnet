@@ -1,6 +1,6 @@
 '''
-Created on Apr 5, 2013
-Last updated Apr 13, 2013
+GoalNet Agent Class
+====================
 
 @author: dmasad, snayar
 '''
@@ -244,24 +244,6 @@ class Agent(object):
         
         
         
-    
-        
-    def choose_task(self):
-        '''
-        Choose a task for this turn.
-        '''
-        #if self task exists then decide to do that or select a task from the possible tasks
-        if self.task:
-            self.task.execute_subtask(self.world.clock)
-        elif self.possible_tasks != []:
-            chosen_task_id = random.choice(self.possible_tasks)
-            #remove chosen_task from the list of possible_tasks
-            chosen_task = self.world.tasks[chosen_task_id]
-            chosen_task.execute_subtask(self.world.clock)
-            message = Message(self.name, chosen_task.owner, self.world.clock, 
-                              'Acknowledgment',chosen_task_id)
-            self.world.agents[chosen_task.owner].get_message(message)
-    
     '''
     MESSAGE HANDLING
     ================
